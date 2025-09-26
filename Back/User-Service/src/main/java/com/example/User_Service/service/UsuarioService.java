@@ -4,6 +4,7 @@ package com.example.User_Service.service;
 import com.example.User_Service.Exceptions.DuplicatedResourceException;
 import com.example.User_Service.config.AppCon;
 import com.example.User_Service.dto.UserResponseDto;
+import com.example.User_Service.dto.UserUpdateDto;
 import com.example.User_Service.dto.UsuarioCreateDto;
 import com.example.User_Service.entidad.Credenciales;
 import com.example.User_Service.entidad.Rol;
@@ -17,6 +18,10 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -72,4 +77,36 @@ public class UsuarioService {
 
 
     }
+
+    public List<UserResponseDto> listarUsuarioso(){
+        return usuarioRepository.findAll()
+                .stream()
+                .map(usuarioMapper::toResponseDto)
+                .toList();
+    }
+
+
+    public UserResponseDto actualizarCliente(@PathVariable Long idUsuario,  UserUpdateDto userUpdateDto){
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("No se ha encontrado el usuario"));
+
+        usuarioMapper.updateEntityFromDto(userUpdateDto, usuario);
+
+        Usuario actualizado = usuarioRepository.save(usuario);
+
+        return usuarioMapper.toResponseDto(actualizado);
+    }
+
+
+    public void eliminarUsuario(@PathVariable Long idUsuario){
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("No se ha encontrado el usuario"));
+
+        usuario.setEstado(false);
+
+        usuarioRepository.save(usuario);
+    }
+
+
+
 }

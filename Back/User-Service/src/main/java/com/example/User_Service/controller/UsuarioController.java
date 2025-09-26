@@ -2,6 +2,7 @@ package com.example.User_Service.controller;
 
 
 import com.example.User_Service.dto.UserResponseDto;
+import com.example.User_Service.dto.UserUpdateDto;
 import com.example.User_Service.dto.UsuarioCreateDto;
 import com.example.User_Service.entidad.Usuario;
 import com.example.User_Service.service.UsuarioService;
@@ -9,10 +10,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/Usuarios")
@@ -28,5 +28,21 @@ public class UsuarioController {
 
         UserResponseDto crearUsuario = usuarioService.crearUsuario(usuarioCreateDto);
         return new ResponseEntity<>(crearUsuario,HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> listarUsuarios(){
+        return ResponseEntity.ok(usuarioService.listarUsuarioso());
+    }
+
+    @PutMapping("/{idUsuario}")
+    public ResponseEntity<UserResponseDto> editarUsuario(@PathVariable Long idUsuario, @RequestBody UserUpdateDto userUpdateDto){
+        return ResponseEntity.ok(usuarioService.actualizarCliente(idUsuario,userUpdateDto));
+    }
+
+    @DeleteMapping("/{idUsuario}")
+    public ResponseEntity<Void> eliminarUsuario (@PathVariable Long idUsuario){
+        usuarioService.eliminarUsuario(idUsuario);
+        return ResponseEntity.noContent().build();
     }
 }

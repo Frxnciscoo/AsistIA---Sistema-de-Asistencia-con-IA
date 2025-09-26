@@ -37,6 +37,7 @@ public class RolController {
 
     @GetMapping
     public ResponseEntity<List<RolResponseDto>> listarRoles(){
+
         return ResponseEntity.ok(rolService.listarRoles());
     }
 

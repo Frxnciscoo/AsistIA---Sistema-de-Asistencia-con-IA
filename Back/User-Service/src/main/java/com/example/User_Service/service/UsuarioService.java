@@ -3,6 +3,7 @@ package com.example.User_Service.service;
 
 import com.example.User_Service.Exceptions.DuplicatedResourceException;
 import com.example.User_Service.config.AppCon;
+import com.example.User_Service.dto.UserAuthResponde;
 import com.example.User_Service.dto.UserResponseDto;
 import com.example.User_Service.dto.UserUpdateDto;
 import com.example.User_Service.dto.UsuarioCreateDto;
@@ -105,6 +106,13 @@ public class UsuarioService {
         usuario.setEstado(false);
 
         usuarioRepository.save(usuario);
+    }
+
+    public UserAuthResponde endPoint (String correo){
+        Credenciales credenciales = credencialesRepository.findByUsuario_Correo(correo)
+                .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
+
+        return usuarioMapper.toAuthResponseDto(credenciales);
     }
 
 

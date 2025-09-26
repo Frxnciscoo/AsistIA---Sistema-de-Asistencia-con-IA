@@ -33,10 +33,6 @@ public class RolController {
     @Value("${user.params.y}")
     private String y;
 
-    @GetMapping("/params")
-    public Map<String,String > params(){
-        return Map.of("p1",p1, "p2", p2, "x", x , "y" , y);
-    }
 
 
     @GetMapping

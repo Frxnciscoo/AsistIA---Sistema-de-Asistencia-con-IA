@@ -5,7 +5,6 @@ import com.example.User_Service.dto.UserAuthResponde;
 import com.example.User_Service.dto.UserResponseDto;
 import com.example.User_Service.dto.UserUpdateDto;
 import com.example.User_Service.dto.UsuarioCreateDto;
-import com.example.User_Service.entidad.Usuario;
 import com.example.User_Service.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +46,10 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-
-    @GetMapping("/internal/auth")
-    public ResponseEntity<UserAuthResponde> buscarAuth(@RequestParam String correo){
-        UserAuthResponde user = usuarioService.endPoint(correo);
-        return ResponseEntity.ok(user);
+   @GetMapping("/internal/auth")
+   public ResponseEntity<UserAuthResponde> buscarAuth(@RequestParam String correo){
+       UserAuthResponde user = usuarioService.endPoint(correo);
+     return ResponseEntity.ok(user);
     }
 
 }

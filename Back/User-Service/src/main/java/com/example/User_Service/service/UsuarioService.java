@@ -108,12 +108,11 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    public UserAuthResponde endPoint (String correo){
-        Credenciales credenciales = credencialesRepository.findByUsuario_Correo(correo)
-                .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
-
+   public UserAuthResponde endPoint (String correo){
+       Credenciales credenciales = credencialesRepository.findByUsuario_Correo(correo)
+               .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
         return usuarioMapper.toAuthResponseDto(credenciales);
-    }
+   }
 
 
 

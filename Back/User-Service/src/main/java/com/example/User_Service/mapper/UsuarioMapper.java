@@ -21,7 +21,7 @@ public interface UsuarioMapper {
     @Mapping(source = "rol.nombreRol" , target = "nombreRol")
     UserResponseDto toResponseDto(Usuario usuario);
 
-    @Mapping(source = "usuario.id", target = "idUsuario")
+    @Mapping(source = "usuario.idUsuario", target = "idUsuario")
     @Mapping(source = "usuario.correo", target = "correo")
     @Mapping(source = "usuario.estado", target = "estado")
     @Mapping(source = "usuario.rol.nombreRol", target = "nombreRol")

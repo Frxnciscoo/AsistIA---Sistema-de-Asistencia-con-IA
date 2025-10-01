@@ -20,7 +20,7 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping
+    @PostMapping("/token")
     public ResponseEntity<Map<String, String>> token(@RequestBody LoginRequest loginRequest) {
         if ("password".equals(loginRequest.grantType())) {
             Map<String, String> tokens = authService.login(loginRequest);

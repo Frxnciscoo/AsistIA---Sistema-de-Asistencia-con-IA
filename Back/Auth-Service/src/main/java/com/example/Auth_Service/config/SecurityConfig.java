@@ -1,6 +1,7 @@
 package com.example.Auth_Service.config;
 
 
+import com.example.Auth_Service.service.CustomUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -10,6 +11,8 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,11 +40,21 @@ public class SecurityConfig {
 
     private final RSAPublicKey publicKey;
     private final RSAPrivateKey privateKey;
+    private final CustomUserDetailsService customUserDetailsService;
 
     // Inyecta las claves que creó JwtConfig
-    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey, CustomUserDetailsService customUserDetailsService) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService); // Le asignamos el detective
+        authProvider.setPasswordEncoder(passwordEncoder()); // Le asignamos el experto en firmas
+        return authProvider;
     }
 
 
@@ -87,8 +100,11 @@ public class SecurityConfig {
                 //bloquea al apigateway
                 //.oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
                 .build();
     }
+
+
 
 
 

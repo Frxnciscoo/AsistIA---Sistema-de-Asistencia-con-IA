@@ -21,16 +21,30 @@ public class TokenService {
 
     public Map<String, String> generateTokens(Authentication authentication) {
         Instant now = Instant.now();
+
+
+        //Dividimos el userDetails
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        //sacamos unicamente el userId.
+        String userId = String.valueOf(userDetails.getId());
+
+
         //  Obtenemos los roles (scope) del usuario autenticado
         String scope = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
+
+        //CONSTRUIMOS NUESTRO TOKEN PERO AHORA CON EL ID
         JwtClaimsSet accessTokenClaims = JwtClaimsSet.builder()
                 .issuer("auth-service")
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
-                .subject(authentication.getName())
+                .subject(userId)
+                //en este caso ya no queremos llamar al correo, ahora el User id
+                //por ello comentamos esta linea
+                //.subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
 
@@ -39,7 +53,7 @@ public class TokenService {
                 .issuer("auth-service")
                 .issuedAt(now)
                 .expiresAt(now.plus(8, ChronoUnit.HOURS))
-                .subject(authentication.getName())
+                .subject(userId)
                 .claim("scope", scope)
                 .build();
 

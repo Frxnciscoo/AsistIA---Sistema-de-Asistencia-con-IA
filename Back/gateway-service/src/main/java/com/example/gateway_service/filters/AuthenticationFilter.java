@@ -69,8 +69,11 @@ public class AuthenticationFilter implements GlobalFilter {
         //validamos todos los datos que tiene el token
         try {
             Jwt decodedJwt = jwtDecoder.decode(token);
+
+            //ARAVES DEL SUBJECT TRAEMOS AHORA EL ID.
             String userId = decodedJwt.getSubject(); // traemos el id
 
+            //CREAMOS LA CABECERA AHORA CON NUESTRO ID
             ServerHttpRequest mutatedRequest = serverHttpRequest.mutate()
                     .header("X-User-ID", userId)
                     .build();

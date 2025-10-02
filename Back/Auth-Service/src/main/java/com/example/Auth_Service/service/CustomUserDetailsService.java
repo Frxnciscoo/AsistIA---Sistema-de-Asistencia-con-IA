@@ -25,17 +25,23 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         String url = "http://User-service/Usuarios/internal/auth?correo=" + username;
+        // se recomienda cambiar la url por las MAYUS - MINUS , pero por el momento me sirve.
 
         UserAuthResponde usuario = restTemplate.getForObject(url,UserAuthResponde.class);
 
         if (usuario == null || !usuario.estado()) {
             throw new DisabledException("La cuenta para el usuario " + username + " está deshabilitada.");
         }
+
+        //creamos nuestro carnet de identidad en esta ocación con el ID, ya que lo necesitamos
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(usuario.nombreRol()));
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                usuario.idUsuario(),
                 usuario.correo(),
                 usuario.contrasenaHash(),
+                usuario.estado(),
                 authorities
+
         );
     }
 }

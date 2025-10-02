@@ -3,17 +3,11 @@ package com.example.User_Service.service;
 
 import com.example.User_Service.Exceptions.DuplicatedResourceException;
 import com.example.User_Service.config.AppCon;
-import com.example.User_Service.dto.UserAuthResponde;
-import com.example.User_Service.dto.UserResponseDto;
-import com.example.User_Service.dto.UserUpdateDto;
-import com.example.User_Service.dto.UsuarioCreateDto;
-import com.example.User_Service.entidad.Credenciales;
-import com.example.User_Service.entidad.Rol;
-import com.example.User_Service.entidad.Usuario;
+import com.example.User_Service.dto.*;
+import com.example.User_Service.entidad.*;
+import com.example.User_Service.mapper.UsuarioHorarioMapper;
 import com.example.User_Service.mapper.UsuarioMapper;
-import com.example.User_Service.repository.CredencialesRepository;
-import com.example.User_Service.repository.RolRepository;
-import com.example.User_Service.repository.UsuarioRepository;
+import com.example.User_Service.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -38,6 +33,18 @@ public class UsuarioService {
 
     @Autowired
     private AppCon appCon;
+
+
+    @Autowired
+    private UserHorarioRepository userHorarioRepository;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
+
+    @Autowired
+    private UsuarioHorarioMapper usuarioHorarioMapper;
+
+
 
     private final PasswordEncoder passwordEncoder;
 
@@ -113,6 +120,36 @@ public class UsuarioService {
                .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
         return usuarioMapper.toAuthResponseDto(credenciales);
    }
+
+
+   public  void asignarHorario(Long idUsuario, AsignacionHorario dto){
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("No se ha encontrado el id del usuario"));
+
+       Horario horario = horarioRepository.findById(dto.idHorario())
+               .orElseThrow(() -> new RuntimeException("No se encontro el id del Horario"));
+
+       //me sale el error aqui, cuando pongo el dto
+       UserHorario usuarioHorario = usuarioHorarioMapper.toEntity(dto);
+       usuarioHorario.setUsuario(usuario);
+       usuarioHorario.setHorario(horario);
+
+       userHorarioRepository.save(usuarioHorario);
+
+
+
+   }
+
+
+    public List<AsignacionHorarioResponseDto> listarHorariosPorUsuario(Long idUsuario){
+
+        List<UserHorario> usuarioHorarios = userHorarioRepository.findByUsuario_IdUsuario(idUsuario);
+
+        return usuarioHorarios.stream()
+                .map(usuarioHorarioMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
 
 
 

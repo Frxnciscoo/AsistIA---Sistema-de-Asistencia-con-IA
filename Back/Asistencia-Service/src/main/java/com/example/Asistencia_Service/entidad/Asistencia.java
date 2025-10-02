@@ -26,9 +26,8 @@ public class Asistencia {
     @Column(name = "HoraRegistro")
     private LocalTime horaRegistro;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "TipoEvento")
-    TipoEvento tipoEvento;
+    private String tipoEvento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idTipoRegistro" , nullable = false)
@@ -44,7 +43,7 @@ public class Asistencia {
     public Asistencia() {
     }
 
-    public Asistencia(Long idAsistencia, Long idUsuario, LocalDate fecha, LocalTime horaRegistro, TipoEvento tipoEvento, TiposRegistro tiposRegistro, Boolean estado, LocalDateTime fechaRegistro) {
+    public Asistencia(Long idAsistencia, Long idUsuario, LocalDate fecha, LocalTime horaRegistro, String tipoEvento, TiposRegistro tiposRegistro, Boolean estado, LocalDateTime fechaRegistro) {
         this.idAsistencia = idAsistencia;
         this.idUsuario = idUsuario;
         this.fecha = fecha;
@@ -54,6 +53,7 @@ public class Asistencia {
         this.estado = estado;
         this.fechaRegistro = fechaRegistro;
     }
+
 
     public Long getIdAsistencia() {
         return idAsistencia;
@@ -87,11 +87,11 @@ public class Asistencia {
         this.horaRegistro = horaRegistro;
     }
 
-    public TipoEvento getTipoEvento() {
+    public String getTipoEvento() {
         return tipoEvento;
     }
 
-    public void setTipoEvento(TipoEvento tipoEvento) {
+    public void setTipoEvento(String tipoEvento) {
         this.tipoEvento = tipoEvento;
     }
 

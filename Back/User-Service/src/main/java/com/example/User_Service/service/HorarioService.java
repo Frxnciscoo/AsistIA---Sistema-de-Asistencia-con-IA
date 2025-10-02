@@ -1,9 +1,9 @@
 package com.example.User_Service.service;
 
-
 import com.example.User_Service.Exceptions.DuplicateHorario;
 import com.example.User_Service.dto.HorarioCreateDto;
 import com.example.User_Service.dto.HorarioRespondeDto;
+import com.example.User_Service.dto.HorarioUpdateDto;
 import com.example.User_Service.entidad.Horario;
 import com.example.User_Service.mapper.HorarioMapper;
 import com.example.User_Service.repository.HorarioRepository;
@@ -15,7 +15,6 @@ import java.util.List;
 
 @Service
 public class HorarioService {
-
 
     @Autowired
     private HorarioRepository horarioRepository;
@@ -46,6 +45,24 @@ public class HorarioService {
     }
 
 
+
+    public HorarioRespondeDto actualizarHorario(Long idHorario, HorarioUpdateDto horarioUpdateDto){
+        Horario horario= horarioRepository.findById(idHorario)
+                .orElseThrow(() -> new RuntimeException("No se encuentra este id"));
+
+        horarioMapper.updateEntityFromDto(horarioUpdateDto, horario);
+
+        Horario actualizado = horarioRepository.save(horario);
+
+        return horarioMapper.toResponseDto(actualizado);
+    }
+
+
+
+
+
+
+
     @Transactional
     public void eliminarHorario( Long idHorario){
         Horario horario = horarioRepository.findById(idHorario)
@@ -53,6 +70,5 @@ public class HorarioService {
         horario.setEstado(false);
         horarioRepository.save(horario);
     }
-
 
 }

@@ -3,6 +3,7 @@ package com.example.User_Service.controller;
 
 import com.example.User_Service.dto.HorarioCreateDto;
 import com.example.User_Service.dto.HorarioRespondeDto;
+import com.example.User_Service.dto.HorarioUpdateDto;
 import com.example.User_Service.service.HorarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,12 @@ import java.util.List;
 public class Horario {
 
 
-    @Autowired
-    private HorarioService horarioService;
+
+    private final HorarioService horarioService;
+
+    public Horario(HorarioService horarioService) {
+        this.horarioService = horarioService;
+    }
 
 
     @GetMapping
@@ -29,6 +34,17 @@ public class Horario {
     public ResponseEntity<HorarioRespondeDto> crearHorario(@RequestBody HorarioCreateDto horarioCreateDto){
         return ResponseEntity.ok(horarioService.crearHorario(horarioCreateDto));
     }
+
+
+    @PutMapping("/{idHorario}")
+    public ResponseEntity<HorarioRespondeDto> editarHorario( @PathVariable Long idHorario, @RequestBody HorarioUpdateDto horarioUpdateDto){
+        return ResponseEntity.ok(horarioService.actualizarHorario(idHorario, horarioUpdateDto));
+    }
+
+
+
+
+
 
     @DeleteMapping("/{idHorario}")
     public ResponseEntity<Void> eliminar (@PathVariable Long idHorario){

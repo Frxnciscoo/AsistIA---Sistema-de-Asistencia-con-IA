@@ -2,10 +2,10 @@ package com.example.User_Service.mapper;
 
 import com.example.User_Service.dto.HorarioCreateDto;
 import com.example.User_Service.dto.HorarioRespondeDto;
+import com.example.User_Service.dto.HorarioUpdateDto;
 import com.example.User_Service.dto.RolResponseDto;
 import com.example.User_Service.entidad.Horario;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface HorarioMapper {
@@ -19,4 +19,7 @@ public interface HorarioMapper {
 
     // de igual manera mostramos todos los campos
     HorarioRespondeDto toResponseDto(Horario entity);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto (HorarioUpdateDto horarioUpdateDto, @MappingTarget Horario entity);
 }

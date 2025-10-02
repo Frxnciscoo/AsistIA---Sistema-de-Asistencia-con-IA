@@ -1,6 +1,7 @@
 package com.example.User_Service.service;
 
 
+import com.example.User_Service.Exceptions.DuplicateHorario;
 import com.example.User_Service.dto.HorarioCreateDto;
 import com.example.User_Service.dto.HorarioRespondeDto;
 import com.example.User_Service.entidad.Horario;
@@ -34,6 +35,11 @@ public class HorarioService {
 
     @Transactional
     public HorarioRespondeDto crearHorario(HorarioCreateDto horarioCreateDto){
+
+        if (horarioRepository.existsBynombreHorario(horarioCreateDto.nombreHorario())){
+            throw new DuplicateHorario("El nombre del horario ya se encuentra asignado");
+        }
+
         Horario horario = horarioMapper.toEntity(horarioCreateDto);
         Horario guardado = horarioRepository.save(horario);
         return horarioMapper.toResponseDto(guardado);

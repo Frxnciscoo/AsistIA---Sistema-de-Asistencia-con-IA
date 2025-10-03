@@ -1,10 +1,7 @@
 package com.example.User_Service.controller;
 
 
-import com.example.User_Service.dto.UserAuthResponde;
-import com.example.User_Service.dto.UserResponseDto;
-import com.example.User_Service.dto.UserUpdateDto;
-import com.example.User_Service.dto.UsuarioCreateDto;
+import com.example.User_Service.dto.*;
 import com.example.User_Service.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,4 +49,10 @@ public class UsuarioController {
      return ResponseEntity.ok(user);
     }
 
+
+    @GetMapping("/{idUsuario}/horario-actual")
+    public ResponseEntity<HorarioAsignadoDto> obtenerHorarioDelUsuario(@PathVariable Long idUsuario){
+        HorarioAsignadoDto horarioDto = usuarioService.obtenerHorarioActualPorHorario(idUsuario);
+        return ResponseEntity.ok(horarioDto);
+    }
 }

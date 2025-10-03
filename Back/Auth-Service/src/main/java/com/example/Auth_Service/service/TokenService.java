@@ -42,9 +42,6 @@ public class TokenService {
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .subject(userId)
-                //en este caso ya no queremos llamar al correo, ahora el User id
-                //por ello comentamos esta linea
-                //.subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
 

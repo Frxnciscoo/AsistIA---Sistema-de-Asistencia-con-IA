@@ -8,6 +8,8 @@ import com.example.User_Service.entidad.*;
 import com.example.User_Service.mapper.UsuarioHorarioMapper;
 import com.example.User_Service.mapper.UsuarioMapper;
 import com.example.User_Service.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +58,8 @@ public class UsuarioService {
     public UsuarioService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class); // Asegúrate de tener un logger
 
 
     @Transactional
@@ -130,7 +136,7 @@ public class UsuarioService {
        Horario horario = horarioRepository.findById(dto.idHorario())
                .orElseThrow(() -> new RuntimeException("No se encontro el id del Horario"));
 
-       //me sale el error aqui, cuando pongo el dto
+
        UserHorario usuarioHorario = usuarioHorarioMapper.toEntity(dto);
        usuarioHorario.setUsuario(usuario);
        usuarioHorario.setHorario(horario);
@@ -150,6 +156,30 @@ public class UsuarioService {
                 .map(usuarioHorarioMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
+
+
+    public HorarioAsignadoDto obtenerHorarioActualPorHorario(Long idUsuario){
+        LocalDate hoy = LocalDate.now();
+
+        logger.info("==> Buscando horario para usuario ID: {} en la fecha: {}", idUsuario, hoy);
+
+
+        UserHorario userHorario = userHorarioRepository.findHorarioAsignadoPorFecha(idUsuario,hoy)
+                .orElseThrow(() -> new RuntimeException("No se ha asignado un horario para el usuario"));
+        logger.error("==> ¡No se encontró horario para el usuario ID: {}!", idUsuario);
+
+
+        Horario horario = userHorario.getHorario();
+        logger.info("==> ¡Horario encontrado! Devolviendo DTO para el horario: {}", horario.getNombreHorario());
+
+
+        return new HorarioAsignadoDto(horario.getHoraEntrada(), horario.getToleranciaMin());
+
+
+    }
+
+
+
 
 
 

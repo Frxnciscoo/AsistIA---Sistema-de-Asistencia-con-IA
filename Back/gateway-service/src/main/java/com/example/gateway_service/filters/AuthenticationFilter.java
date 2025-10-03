@@ -78,6 +78,8 @@ public class AuthenticationFilter implements GlobalFilter {
                     .header("X-User-ID", userId)
                     .build();
 
+            logger.info("Gateway: Añadiendo cabecera X-User-ID con valor: {}", userId);
+
             ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
 
             logger.info("\"Token válido. Usuario ID: {}. Petición reenviada a: {}", userId,path);
@@ -85,6 +87,10 @@ public class AuthenticationFilter implements GlobalFilter {
 
 
             // regresamos mensaje y no esta autorizado
+
+
+
+
         } catch (JwtException e){
             logger.error("el token es invalido", path, e.getMessage());
             return onError(exchange, HttpStatus.UNAUTHORIZED);

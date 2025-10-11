@@ -1,0 +1,132 @@
+<div class="flex h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 overflow-auto flex flex-col">
+    <!-- Header -->
+    <app-header
+      [title]="'Perfil de Usuario'"
+      [subtitle]="'Detalles y configuración de la cuenta'"
+      [buttonText]="'Editar Perfil'"
+      [icon]="'edit'"
+    ></app-header>
+
+    <!-- Contenido -->
+    <div class="p-6 space-y-6 flex-1">
+      <!-- Información del usuario -->
+      <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
+        <div class="flex items-center space-x-6">
+          <!-- Foto de perfil -->
+          <img
+            [src]="user.photo"
+            alt="Foto de perfil"
+            class="w-24 h-24 rounded-full border-2 border-gray-200 shadow"
+          />
+
+          <!-- Datos básicos -->
+          <div>
+            <h2 class="text-xl font-bold text-gray-800">{{ user.name }}</h2>
+            <p class="text-gray-600">{{ user.email }}</p>
+            <span
+              class="mt-2 inline-block px-3 py-1 text-sm font-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-700': user.status === 'Activo',
+                'bg-red-100 text-red-700': user.status === 'Inactivo'
+              }"
+            >
+              {{ user.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles del perfil -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Información personal -->
+        <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            Información Personal
+          </h3>
+          <ul class="space-y-2 text-gray-600">
+            <li><span class="font-medium text-gray-800">Teléfono:</span> {{ user.phone }}</li>
+            <li><span class="font-medium text-gray-800">Dirección:</span> {{ user.address }}</li>
+            <li><span class="font-medium text-gray-800">DNI:</span> {{ user.dni }}</li>
+          </ul>
+        </div>
+
+        <!-- Información laboral -->
+        <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            Información Laboral
+          </h3>
+          <ul class="space-y-2 text-gray-600">
+            <li><span class="font-medium text-gray-800">Cargo:</span> {{ user.role }}</li>
+            <li><span class="font-medium text-gray-800">Área:</span> {{ user.department }}</li>
+            <li><span class="font-medium text-gray-800">Fecha de ingreso:</span> {{ user.startDate }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Configuración -->
+      <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuración</h3>
+        <div class="space-y-3">
+          <button
+            (click)="abrirModal('password')"
+            class="w-full flex items-center justify-between px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+          >
+            Cambiar Contraseña
+            <i class="material-icons">lock</i>
+          </button>
+          <button
+            (click)="abrirModal('notificaciones')"
+            class="w-full flex items-center justify-between px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+          >
+            Preferencias de Notificación
+            <i class="material-icons">notifications</i>
+          </button>
+          <button
+            (click)="abrirModal('logout')"
+            class="w-full flex items-center justify-between px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-red-600"
+          >
+            Cerrar Sesión
+            <i class="material-icons">logout</i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal genérico -->
+<app-modal
+  [isOpen]="isModalOpen"
+  [title]="modalTitle"
+  (close)="closeModal()"
+>
+  <div class="space-y-3 overflow-auto max-h-[70vh] w-full">
+  <!-- Cambiar contraseña -->
+  <ng-container *ngIf="modalAccion === 'password'">
+    <input type="password" placeholder="Contraseña actual" [(ngModel)]="currentPassword" class="input border border-gray-300 p-2 rounded"/>
+    <input type="password" placeholder="Nueva contraseña" [(ngModel)]="newPassword" class="input border border-gray-300 p-2 rounded" />
+    <input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="confirmPassword" class="input border border-gray-300 p-2 rounded" />
+  </ng-container>
+
+  <!-- Preferencias de notificación -->
+  <ng-container *ngIf="modalAccion === 'notificaciones'">
+    <label><input type="checkbox" [(ngModel)]="user.notifications.email" /> Correo electrónico</label>
+    <label><input type="checkbox" [(ngModel)]="user.notifications.sms" /> SMS</label>
+    <label><input type="checkbox" [(ngModel)]="user.notifications.push" /> Notificaciones push</label>
+  </ng-container>
+
+  <!-- Confirmar -->
+  <button
+    class="w-full flex items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+    (click)="confirmarAccion()"
+  >
+    Confirmar
+  </button>
+</div>
+
+</app-modal>

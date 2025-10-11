@@ -1,0 +1,16 @@
+@import "angular-calendar/scss/angular-calendar.scss";
+
+
+/* luego Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+/* estilos personalizados */
+*, ::before, ::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

@@ -1,0 +1,67 @@
+<div class="flex h-screen bg-gray-50">
+  <app-sidebar class="flex-shrink-0"></app-sidebar>
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <app-header [title]="'Historial de asistencia'" 
+    [subtitle]="'Resumen de asistencia de los empleados'" [buttonText]="'Exportar'" [icon]="'download'"></app-header>
+
+    <div class="p-6 flex-1 overflow-auto">
+      <div class="p-4 flex-1 rounded-2xl shadow bg-white">
+        <!-- Calendario -->
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events"
+          (dayClicked)="handleDayClick($event)">
+        </mwl-calendar-month-view>
+      </div>
+    </div> 
+  </main>
+</div>
+
+<!-- Modal de detalle -->
+<app-modal 
+  [isOpen]="isModalOpen" 
+  [title]="'Detalle de asistencia'" 
+  (close)="closeModal()">
+  <div *ngIf="selectedEvent" class="space-y-2 overflow-auto max-h-[70vh]">
+    <p class="text-gray-700">
+      Día: <strong>{{ selectedEvent.start | date:'fullDate' }}</strong>
+    </p>
+    <p>
+      Estado: <span class="font-semibold">{{ selectedEvent.title }}</span>
+    </p>
+
+    <!-- Botón de incidencia -->
+    <button
+      class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      (click)="openIncidentModal()"
+    >
+      Reportar incidencia
+    </button>
+  </div>
+</app-modal>
+
+<!-- Modal de incidencia -->
+<app-modal
+  [isOpen]="isIncidentModalOpen"
+  [title]="'Reportar incidencia'"
+  (close)="closeIncidentModal()"
+  class="max-w-3xl"> 
+  <form class="space-y-4 overflow-auto max-h-[80vh] w-full">
+    <label class="block">
+      <span class="text-gray-700">Descripción de la incidencia</span>
+      <textarea 
+        class="mt-1 block w-full border rounded-md p-2 resize-none" 
+        rows="6"
+        placeholder="Escribe la descripción aquí...">
+      </textarea>
+    </label>
+    <button
+      type="submit"
+      class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      (click)="closeIncidentModal()"
+    >
+      Enviar
+    </button>
+  </form>
+</app-modal>
+

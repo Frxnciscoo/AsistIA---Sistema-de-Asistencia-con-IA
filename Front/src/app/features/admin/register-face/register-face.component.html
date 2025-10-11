@@ -1,0 +1,86 @@
+<div class="flex h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar class="flex-shrink-0"></app-sidebar>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 overflow-auto flex flex-col">
+    <!-- Header -->
+    <app-header [title]="'Registro de Rostro'" [subtitle]="'Captura y registra el rostro de un empleado'"></app-header>
+
+    <!-- Formulario -->
+    <div class="p-6 space-y-6 flex-1">
+      <div class="bg-white rounded-xl shadow p-6 space-y-6 border border-gray-100 mx-auto">
+
+        <!-- Selección de empleado -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2 md:mb-0">Empleado</label>
+          <div class="flex items-center gap-4">
+            <select 
+              class="p-3 border rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              [(ngModel)]="selectedEmployee"
+              [disabled]="isNewEmployee">
+              <option value="">Seleccionar empleado existente</option>
+              <option value="Juan Pérez">Juan Pérez</option>
+              <option value="Ana Torres">Ana Torres</option>
+              <option value="Carlos Gómez">Carlos Gómez</option>
+            </select>
+
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" [(ngModel)]="isNewEmployee" class="h-4 w-4 text-blue-600 rounded">
+              Nuevo empleado
+            </label>
+          </div>
+        </div>
+
+        <!-- Nuevo empleado -->
+        <div *ngIf="isNewEmployee">
+          <label class="block text-gray-700 font-medium mb-2">Nombre del nuevo empleado</label>
+          <input type="text" [(ngModel)]="newEmployeeName"
+                 placeholder="Ej: Pedro Ramirez"
+                 class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <!-- Subida de imágenes -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-4">Subir 4 imágenes del rostro</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div *ngFor="let i of [0,1,2,3]; let idx = index" 
+                 class="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-center h-48 w-full">
+
+              <input 
+                type="file" 
+                accept="image/*" 
+                (change)="onFileSelected($event, idx)" 
+                class="hidden" 
+                id="file-{{idx}}">
+
+              <label for="file-{{idx}}" class="cursor-pointer text-gray-500 hover:text-blue-600 flex flex-col items-center">
+
+                <!-- Mostrar preview si ya hay imagen -->
+                <ng-container *ngIf="facePreviews[idx]; else uploadIcon">
+                  <img [src]="facePreviews[idx]" alt="Preview"
+                       class="w-full h-28 object-cover rounded-lg mb-2 shadow" />
+                  <span class="text-blue-700">Imagen cargada</span>
+                </ng-container>
+
+                <!-- Ícono cuando no hay imagen -->
+                <ng-template #uploadIcon>
+                  <i class="fas fa-upload text-3xl mb-2"></i>
+                  <span>Subir imagen {{ idx+1 }}</span>
+                </ng-template>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón registrar -->
+        <div class="flex justify-end">
+          <button (click)="registerFace()"
+                  class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            Registrar Rostro
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

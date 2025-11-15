@@ -11,7 +11,6 @@ import org.mapstruct.Mapping;
 public interface AsistenciaMapper {
 
 
-    //ignoramos ya que la entidad los crea de manera automatica
     @Mapping(target = "idAsistencia" , ignore = true)
     @Mapping(target = "idUsuario" , ignore = true)
     @Mapping(target = "fecha", ignore = true)

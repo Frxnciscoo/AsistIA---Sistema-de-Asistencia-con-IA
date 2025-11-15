@@ -11,7 +11,6 @@ import org.mapstruct.*;
 public interface HorarioMapper {
 
 
-    @Mapping(target = "idHorario" , ignore = true)
     @Mapping(target = "estado" , ignore = true)
     @Mapping(target = "fechaCreacion" , ignore = true)
     Horario toEntity (HorarioCreateDto horarioCreateDto);

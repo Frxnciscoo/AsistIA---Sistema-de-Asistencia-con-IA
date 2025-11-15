@@ -27,7 +27,7 @@ public class JwtConfig {
         String publicKeyPath = rsaKeyCon.publicKey();
 
 
-        if (publicKeyPath.startsWith("classpath:")) {
+        if (publicKeyPath .startsWith("classpath:")) {
             publicKeyPath = publicKeyPath.substring("classpath:".length());
         }
 

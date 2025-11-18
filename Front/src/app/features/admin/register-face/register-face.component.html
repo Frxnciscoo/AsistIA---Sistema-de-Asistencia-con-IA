@@ -2,85 +2,126 @@
   <!-- Sidebar -->
   <app-sidebar class="flex-shrink-0"></app-sidebar>
 
-  <!-- Contenido principal -->
-  <main class="flex-1 overflow-auto flex flex-col">
+  <!-- Main content -->
+  <main class="flex-1 overflow-auto">
     <!-- Header -->
-    <app-header [title]="'Registro de Rostro'" [subtitle]="'Captura y registra el rostro de un empleado'"></app-header>
+    <app-header
+      [title]="'Registro de Rostro'"
+      [subtitle]="'Captura y registra el rostro de un empleado'">
+    </app-header>
 
-    <!-- Formulario -->
-    <div class="p-6 space-y-6 flex-1">
-      <div class="bg-white rounded-xl shadow p-6 space-y-6 border border-gray-100 mx-auto">
+    <div class="p-6 space-y-8">
+      <div class="bg-white rounded-xl shadow-md p-8 border border-gray-100 space-y-8">
 
-        <!-- Selección de empleado -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-2 md:mb-0">Empleado</label>
-          <div class="flex items-center gap-4">
-            <select 
-              class="p-3 border rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [(ngModel)]="selectedEmployee"
-              [disabled]="isNewEmployee">
-              <option value="">Seleccionar empleado existente</option>
-              <option value="Juan Pérez">Juan Pérez</option>
-              <option value="Ana Torres">Ana Torres</option>
-              <option value="Carlos Gómez">Carlos Gómez</option>
-            </select>
-
-            <label class="flex items-center gap-2 text-sm">
-              <input type="checkbox" [(ngModel)]="isNewEmployee" class="h-4 w-4 text-blue-600 rounded">
-              Nuevo empleado
-            </label>
+        <!-- DATOS DEL USUARIO -->
+        <section>
+          <div class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Datos del Empleado</h2>
+            <p class="text-gray-600 text-sm">Completa la información básica del empleado</p>
           </div>
-        </div>
-
-        <!-- Nuevo empleado -->
-        <div *ngIf="isNewEmployee">
-          <label class="block text-gray-700 font-medium mb-2">Nombre del nuevo empleado</label>
-          <input type="text" [(ngModel)]="newEmployeeName"
-                 placeholder="Ej: Pedro Ramirez"
-                 class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        </div>
-
-        <!-- Subida de imágenes -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-4">Subir 4 imágenes del rostro</label>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div *ngFor="let i of [0,1,2,3]; let idx = index" 
-                 class="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-center h-48 w-full">
-
-              <input 
-                type="file" 
-                accept="image/*" 
-                (change)="onFileSelected($event, idx)" 
-                class="hidden" 
-                id="file-{{idx}}">
-
-              <label for="file-{{idx}}" class="cursor-pointer text-gray-500 hover:text-blue-600 flex flex-col items-center">
-
-                <!-- Mostrar preview si ya hay imagen -->
-                <ng-container *ngIf="facePreviews[idx]; else uploadIcon">
-                  <img [src]="facePreviews[idx]" alt="Preview"
-                       class="w-full h-28 object-cover rounded-lg mb-2 shadow" />
-                  <span class="text-blue-700">Imagen cargada</span>
-                </ng-container>
-
-                <!-- Ícono cuando no hay imagen -->
-                <ng-template #uploadIcon>
-                  <i class="fas fa-upload text-3xl mb-2"></i>
-                  <span>Subir imagen {{ idx+1 }}</span>
-                </ng-template>
-              </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-500 mb-2">Nombre</label>
+              <input type="text" placeholder="Ingresa el nombre"
+                  [(ngModel)]="employeeData.name"
+                  class="w-full px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-500 mb-2">Apellido</label>
+              <input type="text" placeholder="Ingresa el apellido"
+                  [(ngModel)]="employeeData.lastname"
+                  class="w-full px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-500 mb-2">Correo Electrónico</label>
+              <input type="email" placeholder="ejemplo@empresa.com"
+                  [(ngModel)]="employeeData.email"
+                  class="w-full px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            </div>
+            <div>
+  <label class="block text-sm font-semibold text-gray-500 mb-2">DNI</label>
+  <input type="text" placeholder="Ingresa el DNI"
+      [(ngModel)]="employeeData.dni"
+      class="w-full px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+</div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-500 mb-2">Cargo</label>
+              <input type="text" placeholder="Puesto de trabajo"
+                  [(ngModel)]="employeeData.position"
+                  class="w-full px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Botón registrar -->
-        <div class="flex justify-end">
-          <button (click)="registerFace()"
-                  class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            Registrar Rostro
-          </button>
-        </div>
+        <!-- ACCIONES DE FOTO -->
+        <section>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Capturar Rostro</h3>
+            <p class="text-gray-600 text-sm">Toma una foto o sube una imagen existente</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button (click)="openModal()"
+              class="flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Tomar Foto
+            </button>
+            <label class="cursor-pointer">
+              <span class="flex items-center justify-center w-full px-6 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 font-semibold hover:bg-gray-200 transition-colors duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Subir Imagen
+              </span>
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" />
+            </label>
+          </div>
+        </section>
+
+        <!-- PREVIEW DE LA FOTO -->
+        <section>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Vista Previa</h3>
+            <p class="text-gray-600 text-sm">Imagen capturada o seleccionada</p>
+          </div>
+          <div class="flex justify-center">
+            <div class="w-80 h-56 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden shadow-inner">
+              <img *ngIf="facePreview" [src]="facePreview" alt="Vista previa"
+                   class="w-full h-full object-cover rounded-xl transition-all duration-300 hover:scale-105" />
+              <div *ngIf="!facePreview" class="text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-gray-500 font-medium">Sin imagen seleccionada</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Agregar mensaje de error -->
+<div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+  {{ error }}
+  <button (click)="error = null" class="float-right font-bold">&times;</button>
+</div>
+
+<!-- Modificar botón de enviar -->
+<section>
+  <button (click)="registerFace()" [disabled]="loading"
+    class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center">
+    <span *ngIf="!loading">Registrar Empleado</span>
+    <span *ngIf="loading">Registrando...</span>
+  </button>
+</section>
+
       </div>
     </div>
+
+    <!-- Modal para tomar foto -->
+    <app-modal-camara *ngIf="showModal"
+      (close)="closeModal()"
+      (photoTaken)="handlePhoto($event)">
+    </app-modal-camara>
   </main>
 </div>

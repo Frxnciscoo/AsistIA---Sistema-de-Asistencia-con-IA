@@ -34,27 +34,34 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.setMenus();
+  this.role = this.authService.getUserRole();
+  console.log('[Sidebar] Rol recibido del AuthService:', this.role);
+
+  this.setMenus();
+}
+
+setMenus() {
+  const normalizedRole = this.role?.toUpperCase();
+
+  if (normalizedRole === 'ADMINISTRADOR' || normalizedRole === 'ADMIN') {
+    this.menus = [
+      { label: 'Dashboard', icon: 'dashboard', link: '/admin/dashboard' },
+      { label: 'Usuarios', icon: 'people', link: '/admin/users' },
+      { label: 'Horarios', icon: 'schedule', link: '/admin/schedules' },
+      { label: 'Registrar Usuario', icon: 'face', link: '/admin/register-face' },
+      { label: 'Reportes', icon: 'report', link: '/admin/reports' },
+      { label: 'Perfil', icon: 'person', link: '/admin/profile' },
+    ];
+  } else if (normalizedRole === 'TRABAJADOR' || normalizedRole === 'USER') {
+    this.menus = [
+      { label: 'Historial', icon: 'history', link: '/worker/history' },
+      { label: 'Perfil', icon: 'person', link: '/worker/profile' },
+    ];
   }
 
-  setMenus() {
-    if (this.role === 'ADMIN') {
-      this.menus = [
-        { label: 'Dashboard', icon: 'dashboard', link: '/admin/dashboard' },
-        { label: 'Usuarios', icon: 'people', link: '/admin/users' },
-        { label: 'Horarios', icon: 'schedule', link: '/admin/schedules' },
-        { label: 'Registrar Rostro', icon: 'face', link: '/admin/register-face' },
-        { label: 'Reportes', icon: 'report', link: '/admin/reports' },
-        { label: 'Perfil', icon: 'person', link: '/admin/profile' },
+  console.log('[Sidebar] Menús cargados:', this.menus);
+}
 
-      ];
-    } else if (this.role === 'WORKER') {
-      this.menus = [
-        { label: 'Historial', icon: 'history', link: '/worker/history' },
-        { label: 'Perfil', icon: 'person', link: '/worker/profile' },
-      ];
-    }
-  }
 
   toggleSidebar() {
     this.isOpen = !this.isOpen;

@@ -1,11 +1,8 @@
-
-// src/app/features/auth/login/login.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-
 
 @Component({
   selector: 'app-login',
@@ -25,33 +22,42 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required],
+      correo: ['', Validators.required],
+      contrasena: ['', Validators.required],
     });
   }
 
-  onSubmit() {
+   onSubmit() {
     if (this.loginForm.invalid) return;
 
     this.isLoading = true;
     this.errorMessage = null;
 
-    const { username, password } = this.loginForm.value;
+    const { correo, contrasena } = this.loginForm.value;
+    console.log('[Login] Iniciando login para:', correo);
 
-    setTimeout(() => {
-      const success = this.authService.login(username, password);
+    this.authService.login(correo, contrasena).subscribe(success => {
       this.isLoading = false;
-
+      console.log('[Login] Success:', success);
+      
       if (success) {
         const role = this.authService.getUserRole();
-        if (role === 'ADMIN') {
+        console.log('[Login] Rol obtenido:', role);
+        
+        // 🔥 Cambiar las comparaciones para que coincidan con el backend
+        if (role === 'Administrador') {  // ✅ Como viene del backend
+          console.log('[Login] Redirigiendo a admin dashboard');
           this.router.navigate(['/admin/dashboard']);
-        } else if (role === 'WORKER') {
+        } else if (role === 'Trabajador' || role === 'Supervisor') {  // ✅ Otros posibles roles
+          console.log('[Login] Redirigiendo a worker history');
           this.router.navigate(['/worker/history']);
+        } else {
+          console.log('[Login] Rol desconocido:', role, '- redirigiendo a admin');
+          this.router.navigate(['/admin/dashboard']); // Por defecto admin
         }
       } else {
         this.errorMessage = 'Usuario o contraseña incorrectos';
       }
-    }, 1000);
+    });
   }
 }

@@ -11,7 +11,6 @@ import org.mapstruct.Mapping;
 public interface UsuarioHorarioMapper {
 
 
-    @Mapping(target = "idUsuarioHorario", ignore = true)
     @Mapping(target = "estado", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
     @Mapping(target = "usuario", ignore = true)

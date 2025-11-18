@@ -10,16 +10,14 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface HorarioMapper {
 
-
-    @Mapping(target = "idHorario" , ignore = true)
     @Mapping(target = "estado" , ignore = true)
     @Mapping(target = "fechaCreacion" , ignore = true)
     Horario toEntity (HorarioCreateDto horarioCreateDto);
 
-
     // de igual manera mostramos todos los campos
     HorarioRespondeDto toResponseDto(Horario entity);
 
+    // ← AGREGAR ESTE MÉTODO
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromDto (HorarioUpdateDto horarioUpdateDto, @MappingTarget Horario entity);
+    void updateEntityFromDto(HorarioUpdateDto horarioUpdateDto, @MappingTarget Horario entity);
 }

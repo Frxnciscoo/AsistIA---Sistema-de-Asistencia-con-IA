@@ -27,9 +27,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -56,6 +60,8 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder()); // Le asignamos el experto en firmas
         return authProvider;
     }
+
+
 
 
 
@@ -90,7 +96,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
                 //le damos permiso a todas las rutas con auth
-
+                
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth", "/auth/**").permitAll()
@@ -103,6 +109,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .build();
     }
+
 
 
 

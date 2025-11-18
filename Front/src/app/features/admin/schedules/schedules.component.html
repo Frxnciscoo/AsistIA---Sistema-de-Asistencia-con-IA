@@ -5,72 +5,330 @@
   <!-- Contenido principal -->
   <main class="flex-1 overflow-auto flex flex-col">
     <!-- Header -->
-    <app-header [title]="'Horarios'" [subtitle]="'Gestión de horarios'" [buttonText]="'Exportar'" [icon]="'download'" (buttonClick)="exportSchedules()"></app-header>
+    <app-header [title]="'Horarios y Asistencias'" [subtitle]="'Gestión de horarios del personal'" [buttonText]="'Refrescar'" [icon]="'refresh'" (buttonClick)="refresh()"></app-header>
 
     <div class="p-6 space-y-6 flex-1">
-      <!-- Filtros y búsqueda -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <input type="text" placeholder="Buscar horario..."
-               class="flex-1 p-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <div class="flex gap-2">
-          <select class="p-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Todos los empleados</option>
-            <option *ngFor="let schedule of schedules" [value]="schedule.employee">{{ schedule.employee }}</option>
-          </select>
+      <!-- Selector de vista -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex bg-gray-100 rounded-lg p-1">
+          <button 
+            (click)="switchViewMode('shifts')"
+            [class.bg-white]="viewMode === 'shifts'"
+            [class.shadow-sm]="viewMode === 'shifts'"
+            [class.text-blue-600]="viewMode === 'shifts'"
+            [class.font-medium]="viewMode === 'shifts'"
+            class="px-4 py-2 rounded-md text-sm transition-all duration-200"
+          >
+            Turnos de Trabajo
+          </button>
+          <button 
+            (click)="switchViewMode('users')"
+            [class.bg-white]="viewMode === 'users'"
+            [class.shadow-sm]="viewMode === 'users'"
+            [class.text-blue-600]="viewMode === 'users'"
+            [class.font-medium]="viewMode === 'users'"
+            class="px-4 py-2 rounded-md text-sm transition-all duration-200"
+          >
+            Empleados Individuales
+          </button>
         </div>
       </div>
 
-      <!-- Tabla de horarios -->
-      <div class="bg-white rounded-xl shadow border border-gray-100 overflow-auto">
+      <!-- Filtros y búsqueda -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <input 
+          type="text" 
+          placeholder="Buscar empleado o rol..."
+          [(ngModel)]="searchTerm"
+          (input)="filterSchedules()"
+          class="flex-1 p-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+        <div class="flex gap-3">
+          <button 
+            (click)="exportSchedules()"
+            class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors duration-200 shadow-md"
+          >
+            <i class="material-icons text-sm">download</i>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading y Error -->
+      <div *ngIf="loading" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-2 text-gray-600">Cargando...</span>
+      </div>
+
+      <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        {{ error }}
+        <button (click)="closeError()" class="float-right font-bold">&times;</button>
+      </div>
+
+      <!-- Tabla de horarios individuales (usuarios) -->
+      <div *ngIf="!loading && !error && viewMode === 'users'" class="bg-white rounded-xl shadow border border-gray-100 overflow-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empleado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entrada</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider justify-center">Acciones</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let schedule of schedules">
+            <tr *ngFor="let schedule of pagedSchedules()">
               <td class="px-6 py-4 whitespace-nowrap text-gray-800">{{ schedule.employee }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ schedule.date | date:'shortDate' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ schedule.role || 'N/A' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-800">{{ schedule.checkIn }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-800">{{ schedule.checkOut }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-center gap-2">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span [class]="getStatusClass(schedule.status || '')" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                  {{ getStatusText(schedule.status || '') }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
                 
-                <!-- Botón Editar -->
+                <!-- Botón Marcar Asistencia -->
                 <button
                   class="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
-                  (click)="editarHorario(schedule)"
+                  (click)="openAttendanceModal(schedule)"
+                  title="Marcar asistencia"
+                >
+                  <i class="material-icons text-base">check_circle</i>
+                  <span class="hidden sm:inline">Asistencia</span>
+                </button>
+
+                <!-- Botón Ver Historial -->
+                <button
+                  class="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                  (click)="viewAttendanceHistory(schedule.userId, schedule.employee)"
+                  title="Ver historial"
+                >
+                  <i class="material-icons text-base">history</i>
+                  <span class="hidden sm:inline">Historial</span>
+                </button>
+
+                <!-- Botón Editar Horario -->
+                <button
+                  class="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                  (click)="editSchedule(schedule)"
+                  title="Editar horario"
                 >
                   <i class="material-icons text-base">edit</i>
                   <span class="hidden sm:inline">Editar</span>
-                </button>
-
-                <!-- Botón Eliminar -->
-                <button
-                  class="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-                  (click)="eliminarHorario(schedule)"
-                >
-                  <i class="material-icons text-base">delete</i>
-                  <span class="hidden sm:inline">Eliminar</span>
                 </button>
 
               </td>
             </tr>
           </tbody>
         </table>
+
+        <!-- Mensaje si no hay datos -->
+        <div *ngIf="filteredSchedules.length === 0" class="text-center py-12 text-gray-500">
+          <i class="material-icons text-4xl text-gray-400 mb-2">search_off</i>
+          <p>No se encontraron horarios que coincidan con la búsqueda.</p>
+        </div>
+      </div>
+
+      <!-- Tabla de turnos de trabajo -->
+      <div *ngIf="!loading && !error && viewMode === 'shifts'" class="bg-white rounded-xl shadow border border-gray-100 overflow-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turno</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tolerancia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Empleados</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Presentes</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarde</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ausentes</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let workSchedule of pagedWorkSchedules()" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                    <i class="material-icons text-white text-sm">schedule</i>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ workSchedule.scheduleName }}</div>
+                    <div class="text-sm text-gray-500">ID: {{ workSchedule.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-800">{{ workSchedule.startTime }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-800">{{ workSchedule.endTime }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ workSchedule.tolerance }} min</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                  {{ workSchedule.totalEmployees }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                  {{ workSchedule.presentCount }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                  {{ workSchedule.lateCount }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                  {{ workSchedule.absentCount }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span [class]="workSchedule.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" 
+                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                  {{ workSchedule.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Mensaje si no hay datos de turnos -->
+        <div *ngIf="filteredWorkSchedules.length === 0" class="text-center py-12 text-gray-500">
+          <i class="material-icons text-4xl text-gray-400 mb-2">schedule_send</i>
+          <p>No se encontraron turnos de trabajo.</p>
+          <p class="text-sm mt-2">Verifica que el backend esté configurado correctamente.</p>
+        </div>
       </div>
 
       <!-- Paginación -->
-      <div class="flex justify-end mt-4 space-x-2">
-        <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">&lt;</button>
-        <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">1</button>
-        <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">2</button>
-        <button class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">&gt;</button>
+      <div *ngIf="!loading && !error && ((viewMode === 'users' && filteredSchedules.length > 0) || (viewMode === 'shifts' && filteredWorkSchedules.length > 0))" class="flex justify-end mt-4 space-x-2">
+        <button (click)="goToPage(page - 1)" [disabled]="page <= 1" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">&lt;</button>
+        <button *ngFor="let p of [].constructor(totalPages()); let i = index" 
+                (click)="goToPage(i+1)" 
+                [class.bg-blue-600]="page === i+1" 
+                [class.text-white]="page === i+1" 
+                class="px-3 py-1 rounded hover:bg-gray-200">{{ i+1 }}</button>
+        <button (click)="goToPage(page + 1)" [disabled]="page >= totalPages()" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50">&gt;</button>
+      </div>
+
+      <!-- Resumen de asistencias -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+              <i class="material-icons text-white text-xl">group</i>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Empleados</div>
+          <div class="text-3xl font-bold text-gray-800 mt-2">{{ getTotalEmployees() }}</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+              <i class="material-icons text-white text-xl">check_circle</i>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Presentes</div>
+          <div class="text-3xl font-bold text-gray-800 mt-2">{{ getPresentCount() }}</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+              <i class="material-icons text-white text-xl">schedule</i>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Tarde</div>
+          <div class="text-3xl font-bold text-gray-800 mt-2">{{ getLateCount() }}</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+              <i class="material-icons text-white text-xl">cancel</i>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-gray-600 uppercase tracking-wide">Ausentes</div>
+          <div class="text-3xl font-bold text-gray-800 mt-2">{{ getAbsentCount() }}</div>
+        </div>
       </div>
     </div>
   </main>
+</div>
+
+<!-- Modal para marcar asistencia -->
+<div *ngIf="showAttendanceModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 border border-gray-100">
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800">Marcar Asistencia</h3>
+      <button 
+        (click)="closeAttendanceModal()" 
+        class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+      >
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Empleado:</label>
+        <p class="text-gray-800 font-medium bg-gray-50 p-3 rounded-lg">{{ selectedEmployeeName }}</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de registro:</label>
+        <div class="space-y-3">
+          <label class="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+            <input 
+              type="radio" 
+              name="attendanceType" 
+              value="ENTRADA"
+              [(ngModel)]="attendanceType"
+              class="mr-3 text-blue-500 focus:ring-blue-500"
+            >
+            <div>
+              <span class="text-gray-800 font-medium">Entrada</span>
+              <p class="text-sm text-gray-500">Registrar llegada al trabajo</p>
+            </div>
+          </label>
+          <label class="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+            <input 
+              type="radio" 
+              name="attendanceType" 
+              value="SALIDA"
+              [(ngModel)]="attendanceType"
+              class="mr-3 text-blue-500 focus:ring-blue-500"
+            >
+            <div>
+              <span class="text-gray-800 font-medium">Salida</span>
+              <p class="text-sm text-gray-500">Registrar salida del trabajo</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 p-3 rounded-lg">
+        <div class="flex items-center text-sm text-gray-600">
+          <i class="material-icons text-sm mr-2">schedule</i>
+          <span>{{ getCurrentDateTime() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+      <button 
+        (click)="closeAttendanceModal()"
+        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
+      >
+        Cancelar
+      </button>
+      <button 
+        (click)="markAttendance()"
+        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md"
+      >
+        Marcar {{ getAttendanceTypeText() }}
+      </button>
+    </div>
+  </div>
 </div>

@@ -1,0 +1,67 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h2 class="text-lg font-semibold text-slate-900">Capturar Foto</h2>
+      <button 
+        (click)="closeModal()" 
+        title="Cerrar modal"
+        class="text-slate-400 hover:text-slate-600 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Video feed -->
+    <div class="p-6">
+      <div class="relative mb-4">
+        <video 
+          #videoElement 
+          autoplay 
+          [attr.playsinline]="true" 
+          class="w-full rounded-lg border border-slate-200 bg-slate-100"
+        ></video>
+      </div>
+      
+      <!-- Status message -->
+      <div class="mb-4 p-3 rounded-md text-center" [ngClass]="{
+          'bg-red-50 border border-red-200': statusMessage.includes('No se') || statusMessage.includes('borrosa'),
+          'bg-amber-50 border border-amber-200': statusMessage.includes('Centra') || statusMessage.includes('Acércate'),
+          'bg-green-50 border border-green-200': statusMessage.includes('Perfecto') || statusMessage.includes('correctamente'),
+          'bg-slate-50 border border-slate-200': statusMessage.includes('Detectando') || statusMessage.includes('Iniciando')
+      }">
+        <p class="text-sm font-medium" [ngClass]="{
+            'text-red-700': statusMessage.includes('No se') || statusMessage.includes('borrosa'),
+            'text-amber-700': statusMessage.includes('Centra') || statusMessage.includes('Acércate'),
+            'text-green-700': statusMessage.includes('Perfecto') || statusMessage.includes('correctamente'),
+            'text-slate-700': statusMessage.includes('Detectando') || statusMessage.includes('Iniciando')
+        }">
+            {{ statusMessage }}
+        </p>
+      </div>
+
+      <!-- Canvas hidden -->
+      <canvas #canvas hidden></canvas>
+
+      <!-- Action button -->
+      <div class="flex justify-center">
+        <button 
+          (click)="takePhoto()" 
+          [disabled]="!statusMessage.includes('Perfecto')"
+          [ngClass]="{
+            'bg-slate-900 hover:bg-slate-800 text-white': statusMessage.includes('Perfecto'),
+            'bg-slate-300 text-slate-500 cursor-not-allowed': !statusMessage.includes('Perfecto')
+          }"
+          class="px-6 py-2 rounded-md font-medium transition-colors flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>{{ statusMessage.includes('Perfecto') ? 'Tomar Foto' : 'Esperando...' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

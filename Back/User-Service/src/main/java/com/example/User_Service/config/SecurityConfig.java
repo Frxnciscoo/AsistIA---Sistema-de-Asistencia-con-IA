@@ -1,24 +1,20 @@
 package com.example.User_Service.config;
 
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -26,51 +22,47 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // @Value("${rsa.public-key}")  // Comentado para pruebas
+    // private String publicKeyPath;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        return httpSecurity
-                //le damos permiso a todas las rutas con auth
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/actuator/health").permitAll();
-                    auth.requestMatchers("/Usuarios/internal/**").permitAll();
-                    auth.anyRequest().authenticated();
-                })
+    // @Bean  // Comentado para pruebas
+    // public JwtDecoder jwtDecoder() throws Exception { ... }
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(withDefaults())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/Usuarios", "/Usuarios/internal/auth", "/uploads/**").permitAll()  // Permitir /uploads/** aquí también
+                .anyRequest().permitAll()  // Cambiado a permitAll para pruebas
+            );
+            // .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));  // Comentado para pruebas
 
-                //bloquea al apigateway
-                //.oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-
-                .build();
+        return http.build();
     }
 
     @Bean
-    public RSAPublicKey rsaPublicKey(@Value("${rsa.public-key}") String publicKeyPath) throws Exception {
-        // Limpiamos la ruta del prefijo "classpath:" para que ClassPathResource funcione
-        if (publicKeyPath.startsWith("classpath:")) {
-            publicKeyPath = publicKeyPath.substring("classpath:".length());
-        }
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
 
-        var resource = new ClassPathResource(publicKeyPath);
-        String key = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-
-        String publicKeyPEM = key
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replaceAll(System.lineSeparator(), "")
-                .replace("-----END PUBLIC KEY-----", "");
-
-        byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-        return (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(encoded));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
-
     @Bean
-    public JwtDecoder jwtDecoder(RSAPublicKey publicKey) {
-        return NimbusJwtDecoder.withPublicKey(publicKey).build();
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/uploads/**");
     }
 }

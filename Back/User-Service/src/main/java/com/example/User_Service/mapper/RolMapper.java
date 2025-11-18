@@ -13,7 +13,6 @@ public interface RolMapper {
 
 
     //Se generan automaticamente o ya se instanciaron en la base de datos
-    @Mapping(target = "idRol", ignore = true)
     @Mapping(target = "estado", ignore = true)
     @Mapping(target = "fechaCreacion", ignore = true)
     Rol toEntity(RolCreateDto Viewdto);

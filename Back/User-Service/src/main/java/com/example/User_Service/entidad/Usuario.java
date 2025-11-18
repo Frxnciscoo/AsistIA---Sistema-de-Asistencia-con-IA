@@ -38,10 +38,13 @@ public class Usuario {
     @Column(name = "FechaCreacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
+    @Column(name = "imagen")
+    private String imagen;
+
     public Usuario() {
     }
 
-    public Usuario(Long idUsuario, String nombre, String apellido, String correo, String dni, Boolean estado, Rol rol, LocalDateTime fechaCreacion) {
+    public Usuario(Long idUsuario, String nombre, String apellido, String correo, String dni, Boolean estado, Rol rol, LocalDateTime fechaCreacion, String imagen) {
         this.idUsuario = idUsuario;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -50,6 +53,7 @@ public class Usuario {
         this.estado = estado;
         this.rol = rol;
         this.fechaCreacion = fechaCreacion;
+        this.imagen = imagen;
     }
 
     public Long getIdUsuario() {
@@ -114,5 +118,13 @@ public class Usuario {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
 }

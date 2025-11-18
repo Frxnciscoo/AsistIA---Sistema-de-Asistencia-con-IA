@@ -17,8 +17,9 @@ public interface UsuarioMapper {
     @Mapping(target = "rol", ignore = true)
     Usuario toEntity(UsuarioCreateDto usuarioCreateDto);
 
-
+    @Mapping(source = "idUsuario", target = "idUsuario") 
     @Mapping(source = "rol.nombreRol" , target = "nombreRol")
+    @Mapping(source = "imagen", target = "imagen")
     UserResponseDto toResponseDto(Usuario usuario);
 
     @Mapping(source = "usuario.idUsuario", target = "idUsuario")
@@ -29,6 +30,6 @@ public interface UsuarioMapper {
     UserAuthResponde toAuthResponseDto(Credenciales credencial);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromDto(UserUpdateDto userUpdateDto, @MappingTarget Usuario entity);
+void updateEntityFromDto(UserUpdateDto userUpdateDto, @MappingTarget Usuario entity);
 
 }

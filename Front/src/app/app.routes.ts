@@ -20,7 +20,7 @@ export const routes: Routes = [
   {
     path: 'worker',
     canActivate: [authGuard, roleGuard], // 👈 usa funciones
-    data: { roles: ['WORKER', 'ADMIN'] },
+    data: { roles: ['TRABAJADOR', 'SUPERVISOR', 'ADMINISTRADOR'] },
     children: [
       { path: '', redirectTo: 'history', pathMatch: 'full' },
       {
@@ -51,7 +51,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard], // 👈 igual acá
-    data: { roles: ['ADMIN'] },
+    data: { roles: ['ADMINISTRADOR'] },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {

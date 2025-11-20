@@ -57,11 +57,13 @@ public class SecurityConfig {
 
                 // Definimos las reglas de autorización para las rutas
                 .authorizeHttpRequests(auth -> {
-                    // La ruta de health check para Consul debe ser pública
-                    auth.requestMatchers("/actuator/health").permitAll();
-                    // Cualquier otra petición requiere un token válido
-                    auth.anyRequest().authenticated();
-                })
+    // La ruta de health check para Consul debe ser pública
+    auth.requestMatchers("/actuator/health").permitAll();
+    // Permitir acceso público al endpoint de reconocimiento facial
+    auth.requestMatchers("/asistencia/reconocimiento-facial").permitAll();
+    // Cualquier otra petición requiere un token válido
+    auth.anyRequest().authenticated();
+})
 
                 // La gestión de sesión debe ser stateless, no guardamos nada en el servidor
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

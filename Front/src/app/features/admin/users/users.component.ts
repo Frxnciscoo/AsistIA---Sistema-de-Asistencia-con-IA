@@ -120,10 +120,6 @@ export class UsersComponent implements OnInit {
         this.error = 'El nombre es obligatorio';
         return;
       }
-      if (!this.selectedUser.lastName || !this.selectedUser.lastName.trim()) {
-        this.error = 'El apellido es obligatorio';
-        return;
-      }
       if (!this.selectedUser.email || !this.selectedUser.email.trim()) {
         this.error = 'El correo es obligatorio';
         return;
@@ -214,10 +210,6 @@ export class UsersComponent implements OnInit {
       return;
     }
     
-    if (!this.selectedUser.lastName || !this.selectedUser.lastName.trim()) {
-      this.error = 'El apellido es obligatorio';
-      return;
-    }
     
     if (this.showChangePassword && (!this.newPassword || this.newPassword.length < 8)) {
       this.error = 'La nueva contraseña debe tener al menos 8 caracteres';

@@ -9,9 +9,17 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   console.log('[TokenFunctionalInterceptor] URL:', req.url);
   console.log('[TokenFunctionalInterceptor] Token presente:', !!token);
   
+  // ← AGREGADO: Redirigir URLs que empiecen con /api al backend
+  let url = req.url;
+  if (url.startsWith('/api')) {
+    url = url.replace('/api', 'http://localhost:8083');
+    console.log('[TokenFunctionalInterceptor] URL redirigida a:', url);
+  }
+  
   if (token) {
     console.log('[TokenFunctionalInterceptor] Agregando Bearer token a la petición');
     const authReq = req.clone({
+      url: url,  // ← AGREGADO: Usar la URL modificada
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
@@ -19,6 +27,9 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
     return next(authReq);
   } else {
     console.log('[TokenFunctionalInterceptor] No hay token disponible');
-    return next(req);
+    const authReq = req.clone({
+      url: url  // ← AGREGADO: Usar la URL modificada incluso sin token
+    });
+    return next(authReq);
   }
 };

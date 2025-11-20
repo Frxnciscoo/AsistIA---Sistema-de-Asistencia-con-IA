@@ -1,0 +1,50 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-7xl">
+    <!-- Título -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Marcado de Asistencia Facial</h1>
+      <p class="text-gray-600 mt-2">Posiciónate frente a la cámara para registrar tu asistencia</p>
+    </div>
+
+    <!-- Contenedor de la cámara -->
+    <div class="relative mb-6 mx-auto" style="max-width: 640px;">
+      <video 
+        #videoElement 
+        autoplay 
+        [attr.playsinline]="true" 
+        class="w-full rounded-lg border border-gray-300 bg-gray-200"
+      ></video>
+      <canvas #canvas class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-lg"></canvas>
+    </div>
+    
+    <!-- Mensaje de estado -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium"
+           [ngClass]="{
+             'bg-red-100 text-red-700': statusMessage.includes('No se') || statusMessage.includes('Error'),
+             'bg-yellow-100 text-yellow-700': statusMessage.includes('Acércate') || statusMessage.includes('Muévete') || statusMessage.includes('Detectando'),
+             'bg-green-100 text-green-700': statusMessage.includes('Perfecto') || statusMessage.includes('éxito'),
+             'bg-blue-100 text-blue-700': statusMessage.includes('Iniciando') || statusMessage.includes('Listo')
+           }">
+        <span>{{ statusMessage }}</span>
+      </div>
+    </div>
+
+    <!-- Indicador de procesamiento -->
+    <div *ngIf="isProcessing" class="text-center mb-6">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="text-sm text-gray-600 mt-2">Procesando reconocimiento...</p>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <h3 class="text-lg font-semibold text-black-800 mb-2">Instrucciones</h3>
+      <ul class="text-sm text-gray-700 space-y-1">
+        <li>• Asegúrate de estar en un lugar bien iluminado</li>
+        <li>• Mira directamente a la cámara</li>
+        <li>• Mantén una distancia moderada (tu rostro debe ocupar ~30% de la pantalla)</li>
+        <li>• Espera a que aparezca "¡Perfecto!" antes de que se procese</li>
+      </ul>
+    </div>
+  </div>
+</div>

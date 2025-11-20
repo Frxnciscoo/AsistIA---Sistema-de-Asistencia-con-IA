@@ -6,7 +6,13 @@ import { NotFoundComponent } from './not-found/not-found.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
-
+{
+    path: 'reconocimiento-facial',
+    loadComponent: () =>
+      import('./ReconocimientoFacial/reconocimiento-facial.component').then(
+        (m) => m.ReconocimientoFacialComponent
+      ),
+  },
   // Auth
   {
     path: 'auth/login',

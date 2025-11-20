@@ -2,6 +2,7 @@ package com.example.Asistencia_Service.controller;
 
 
 import com.example.Asistencia_Service.dto.AsistenciaDtoCreate;
+import com.example.Asistencia_Service.dto.AsistenciaFacialDto;
 import org.springframework.http.HttpHeaders;
 import com.example.Asistencia_Service.dto.AsistenciaDtoResponse;
 import com.example.Asistencia_Service.service.AsistenciaService;
@@ -9,7 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RequestMapping("/asistencia")
 @RestController
@@ -49,4 +53,20 @@ public class AsistenciaController {
 
         return new ResponseEntity<>(asistenciaCreada, HttpStatus.CREATED);
     }
+
+    @PostMapping("/reconocimiento-facial") // Una ruta descriptiva
+    public ResponseEntity<AsistenciaDtoResponse> registrarPorFacial(
+            @RequestBody AsistenciaFacialDto dto) {
+
+        if (dto.rutaImagen() == null || dto.rutaImagen().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        AsistenciaDtoResponse respuesta = asistenciaService.registrarPorReconocimiento(dto);
+
+        return new ResponseEntity<>(respuesta, HttpStatus.CREATED);
+    }
+
 }
+
+

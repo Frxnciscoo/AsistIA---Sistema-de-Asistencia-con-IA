@@ -178,6 +178,11 @@ public class UsuarioService {
 
     }
 
+    public Long obtenerIdPorDni(String dni) {
+        return usuarioRepository.findByDni(dni)
+                .map(Usuario::getIdUsuario)
+                .orElse(null);
+    }
 
 
 

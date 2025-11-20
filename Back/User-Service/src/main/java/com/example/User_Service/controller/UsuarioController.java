@@ -55,4 +55,14 @@ public class UsuarioController {
         HorarioAsignadoDto horarioDto = usuarioService.obtenerHorarioActualPorHorario(idUsuario);
         return ResponseEntity.ok(horarioDto);
     }
+
+    @GetMapping("/internal/buscar-por-dni/{dni}")
+    public ResponseEntity<Long> buscarPorDni(@PathVariable String dni) {
+        Long idUsuario = usuarioService.obtenerIdPorDni(dni);
+        if (idUsuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(idUsuario);
+    }
+
 }

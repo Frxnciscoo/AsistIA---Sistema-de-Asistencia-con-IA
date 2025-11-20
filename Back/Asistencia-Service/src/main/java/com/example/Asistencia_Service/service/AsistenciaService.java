@@ -2,9 +2,8 @@ package com.example.Asistencia_Service.service;
 
 
 import com.example.Asistencia_Service.client.UserServiceClient;
-import com.example.Asistencia_Service.dto.AsistenciaDtoCreate;
-import com.example.Asistencia_Service.dto.AsistenciaDtoResponse;
-import com.example.Asistencia_Service.dto.HorarioAsinadoDto;
+import com.example.Asistencia_Service.client.pythonClient;
+import com.example.Asistencia_Service.dto.*;
 import com.example.Asistencia_Service.entidad.Asistencia;
 import com.example.Asistencia_Service.entidad.TiposRegistro;
 import com.example.Asistencia_Service.mapper.AsistenciaMapper;
@@ -24,6 +23,8 @@ public class AsistenciaService {
 
     private final AsistenciaRepository asistenciaRepository;
 
+    @Autowired
+    private pythonClient pythonClient;
 
     private final  AsistenciaMapper asistenciaMapper;
 
@@ -50,10 +51,27 @@ public class AsistenciaService {
             throw new ResourceNotFoundException("El usuario con ID " + idUsuario + " no tiene un horario asignado para hoy.");
         }
 
-        LocalTime horalimite = horarioAsignado.horaEntrada().plusMinutes(horarioAsignado.toleranciaMin());
-        String estado = LocalTime.now().isAfter(horalimite) ? "TARDE" : "PUNTUAL";
-        String tipoEventoAcabado = dto.tipoEvento() + " - " + estado;
+        LocalTime horaActual = LocalTime.now();
+        LocalTime horaEntrada = horarioAsignado.horaEntrada();
 
+        LocalTime horaInicioPermitida = horaEntrada.minusMinutes(60);
+        LocalTime horaLimiteTardanza = horaEntrada.plusMinutes(horarioAsignado.toleranciaMin());
+
+        String estadoCalculado;
+
+        if (horaActual.isBefore(horaInicioPermitida)) {
+            // CASO: Intenta marcar demasiado temprano (ej. 5 AM para turno de 7 PM)
+            throw new RuntimeException("Es demasiado temprano para marcar asistencia. Tu entrada es a las: " + horaEntrada);
+            // O si prefieres guardarlo: estadoCalculado = "ANTICIPADO";
+        } else if (horaActual.isAfter(horaLimiteTardanza)) {
+            // CASO: Llegó después de la tolerancia
+            estadoCalculado = "TARDE";
+        } else {
+            // CASO: Llegó en el rango correcto
+            estadoCalculado = "PUNTUAL";
+        }
+
+        String tipoEventoAcabado = dto.tipoEvento() + " - " + estadoCalculado;
 
 //VEMOS QUE TENGA UN REGISTRO CREVIAMENTE CREADO
         TiposRegistro registroID = tiposRegistroRepository.findById(dto.idTipoRegistro())
@@ -73,5 +91,32 @@ public class AsistenciaService {
         return asistenciaMapper.toResponse(asistenciaConDatos);
 
 
+    }
+
+
+    public AsistenciaDtoResponse registrarPorReconocimiento(AsistenciaFacialDto dtoFacial) {
+
+        IaRequestDto requestIa = new IaRequestDto(dtoFacial.rutaImagen());
+        IaResponseDto respuestaIa = pythonClient.reconocerRostro(requestIa);
+
+        if (respuestaIa.personas() == null || respuestaIa.personas().isEmpty()) {
+            throw new RuntimeException("Rostro no reconocido o imagen inválida.");
+        }
+
+        String dniDetectado = respuestaIa.personas().getFirst();
+
+        Long idUsuarioDescubierto;
+        try {
+            idUsuarioDescubierto = userServiceClient.obtenerIdPorDni(dniDetectado);
+        } catch (FeignException.NotFound e) {
+            throw new RuntimeException("La IA reconoció el DNI " + dniDetectado + ", pero no existe ese usuario en la base de datos.");
+        }
+
+        AsistenciaDtoCreate dtoAutomatico = new AsistenciaDtoCreate(
+                dtoFacial.tipoEvento(), // <-- ¡Aquí está la mejora! Ya no es fijo.
+                2L // ID para tipo "IA"
+        );
+        // ¡Llamamos a tu método maestro!
+        return registrarAsistencia(idUsuarioDescubierto, dtoAutomatico);
     }
 }

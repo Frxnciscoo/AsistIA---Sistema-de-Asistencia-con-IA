@@ -12,4 +12,7 @@ public interface UserServiceClient {
     @GetMapping("/Usuarios/{idUsuario}/horario-actual")
     HorarioAsinadoDto obtenerHorarioActual(@PathVariable("idUsuario") Long idUsuario);
 
+    @GetMapping("/Usuarios/internal/buscar-por-dni/{dni}")
+    Long obtenerIdPorDni(@PathVariable("dni") String dni);
+
 }

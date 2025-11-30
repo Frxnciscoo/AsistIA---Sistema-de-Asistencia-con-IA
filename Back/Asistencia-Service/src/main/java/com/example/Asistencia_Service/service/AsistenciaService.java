@@ -60,25 +60,19 @@ public class AsistenciaService {
         String estadoCalculado;
 
         if (horaActual.isBefore(horaInicioPermitida)) {
-            // CASO: Intenta marcar demasiado temprano (ej. 5 AM para turno de 7 PM)
             throw new RuntimeException("Es demasiado temprano para marcar asistencia. Tu entrada es a las: " + horaEntrada);
-            // O si prefieres guardarlo: estadoCalculado = "ANTICIPADO";
         } else if (horaActual.isAfter(horaLimiteTardanza)) {
-            // CASO: Llegó después de la tolerancia
             estadoCalculado = "TARDE";
         } else {
-            // CASO: Llegó en el rango correcto
             estadoCalculado = "PUNTUAL";
         }
 
         String tipoEventoAcabado = dto.tipoEvento() + " - " + estadoCalculado;
 
-//VEMOS QUE TENGA UN REGISTRO CREVIAMENTE CREADO
         TiposRegistro registroID = tiposRegistroRepository.findById(dto.idTipoRegistro())
                 .orElseThrow(() -> new RuntimeException("El Id no ha sido encontrado"));
 
 
-        //MANDAMOS LOS DATOS QUE SON AUTOMATICOS.
         Asistencia asistencia = asistenciaMapper.toEntity(dto);
         asistencia.setIdUsuario(idUsuario);
         asistencia.setTiposRegistro(registroID);
@@ -109,12 +103,12 @@ public class AsistenciaService {
         try {
             idUsuarioDescubierto = userServiceClient.obtenerIdPorDni(dniDetectado);
         } catch (FeignException.NotFound e) {
-            throw new RuntimeException("La IA reconoció el DNI " + dniDetectado + ", pero no existe ese usuario en la base de datos.");
+            throw new RuntimeException("La IA no ha logrado reconocer la persona  no se logro marcar la asistencia.");
         }
 
         AsistenciaDtoCreate dtoAutomatico = new AsistenciaDtoCreate(
-                dtoFacial.tipoEvento(), // <-- ¡Aquí está la mejora! Ya no es fijo.
-                2L // ID para tipo "IA"
+                dtoFacial.tipoEvento(),
+                2L
         );
         // ¡Llamamos a tu método maestro!
         return registrarAsistencia(idUsuarioDescubierto, dtoAutomatico);

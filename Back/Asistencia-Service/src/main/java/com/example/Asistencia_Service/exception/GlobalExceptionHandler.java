@@ -17,9 +17,9 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
 
         body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value()); // Error 400
+        body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Error de Negocio");
-        body.put("NO PUEDES MARCAR TU ASISTENCIA TAN TEMPRANO", ex.getMessage()); // <-- Aquí va tu mensaje: "Es demasiado temprano..."
+        body.put("SOLUCIONA TU ERROR CON NOLAZCO", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

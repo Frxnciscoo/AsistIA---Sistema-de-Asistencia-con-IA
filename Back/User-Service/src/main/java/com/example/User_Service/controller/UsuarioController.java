@@ -3,7 +3,6 @@ package com.example.User_Service.controller;
 import com.example.User_Service.dto.*;
 import com.example.User_Service.entidad.Usuario;
 import com.example.User_Service.service.UsuarioService;
-// Agrega el correcto:
 import org.springframework.core.io.Resource;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-
-
 
 @RestController
 @RequestMapping("/Usuarios")
@@ -56,6 +52,13 @@ public class UsuarioController {
         return ResponseEntity.ok(user);
     }
 
+    // ← ENDPOINT AGREGADO: Buscar usuario por DNI (para Asistencia-Service)
+    @GetMapping("/internal/buscar-por-dni/{dni}")
+    public ResponseEntity<Long> obtenerIdPorDni(@PathVariable String dni) {
+        Long idUsuario = usuarioService.obtenerIdPorDni(dni);
+        return ResponseEntity.ok(idUsuario);
+    }
+
     @GetMapping("/{idUsuario}/horario-actual")
     public ResponseEntity<HorarioAsignadoDto> obtenerHorarioDelUsuario(@PathVariable Long idUsuario) {
         HorarioAsignadoDto horarioDto = usuarioService.obtenerHorarioActualPorHorario(idUsuario);
@@ -70,35 +73,29 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    // filepath: c:\PROYECTOS\Proyecto SOA\AsistIA---Sistema-de-Asistencia-con-IA\Back\User-Service\src\main\java\com\example\User_Service\controller\UsuarioController.java
-// ...existing code...
     @GetMapping("/{idUsuario}/imagen")
-public ResponseEntity<Resource> obtenerImagenUsuario(@PathVariable Long idUsuario) {
-    Usuario usuario = usuarioService.buscarUsuarioPorId(idUsuario);
-    if (usuario.getImagen() == null) {
-        return ResponseEntity.notFound().build();
-    }
-    try {
-        Path path = Paths.get("uploads/usuarios/" + Paths.get(usuario.getImagen()).getFileName());
-        Resource resource = new UrlResource(path.toUri());
-        if (resource.exists() && resource.isReadable()) {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)  // Cambia a IMAGE_PNG si es PNG
-                    .body(resource);
-        } else {
+    public ResponseEntity<Resource> obtenerImagenUsuario(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioService.buscarUsuarioPorId(idUsuario);
+        if (usuario.getImagen() == null) {
             return ResponseEntity.notFound().build();
         }
-    } catch (Exception e) {
-        return ResponseEntity.internalServerError().build();
+        try {
+            Path path = Paths.get("uploads/usuarios/" + Paths.get(usuario.getImagen()).getFileName());
+            Resource resource = new UrlResource(path.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
-}
-    
-    
-
-// ...existing code...
-
-    // El método getUserImage ha sido eliminado porque no coincide con la lógica de almacenamiento de imágenes.
-    // Las imágenes se sirven directamente via ResourceHandler en AppCon.java (mapea /uploads/** a file:uploads/).
-    // Accede a URLs como http://localhost:8081/uploads/usuarios/{filename} usando el campo 'imagen' de UserResponseDto.
-    // Asegúrate de agregar WebSecurityCustomizer en SecurityConfig.java para ignorar /uploads/**.
+    @GetMapping("/{idUsuario}")
+    public ResponseEntity<UserResponseDto> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
+        UserResponseDto usuarioDto = usuarioService.obtenerUsuarioPorId(idUsuario);
+        return ResponseEntity.ok(usuarioDto);
+    }
 }

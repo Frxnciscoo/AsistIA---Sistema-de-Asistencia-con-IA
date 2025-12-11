@@ -1,6 +1,5 @@
 package com.example.User_Service.service;
 
-
 import com.example.User_Service.Exceptions.DuplicatedResourceException;
 import com.example.User_Service.dto.*;
 import com.example.User_Service.entidad.*;
@@ -40,8 +39,6 @@ public class UsuarioService {
     @Autowired
     private CredencialesRepository credencialesRepository;
 
-
-
     @Autowired
     private UserHorarioRepository userHorarioRepository;
 
@@ -51,19 +48,16 @@ public class UsuarioService {
     @Autowired
     private UsuarioHorarioMapper usuarioHorarioMapper;
 
-
-
-    private final PasswordEncoder passwordEncoder;
-
     @Autowired
     private RolRepository rolRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class); // Asegúrate de tener un logger
-
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     @Transactional
     public UserResponseDto crearUsuario(UsuarioCreateDto usuarioCreateDto ){
@@ -77,22 +71,15 @@ public class UsuarioService {
         Rol rol = rolRepository.findById(usuarioCreateDto.idRol())
                 .orElseThrow(() -> new ResourceNotFoundException("El rolque buscas no existe"));
 
-
         Usuario usuario = usuarioMapper.toEntity(usuarioCreateDto);
         usuario.setRol(rol);
         Usuario guardar = usuarioRepository.save(usuario);
 
-
         String contrasenaEncriptada = passwordEncoder.encode(usuarioCreateDto.contrasena());
-
         Credenciales nuevaCredencial = new Credenciales(guardar,contrasenaEncriptada);
-
-
         credencialesRepository.save(nuevaCredencial);
 
         return usuarioMapper.toResponseDto(guardar);
-
-
     }
 
     public List<UserResponseDto> listarUsuarioso(){
@@ -102,57 +89,45 @@ public class UsuarioService {
                 .toList();
     }
 
-
     public UserResponseDto actualizarCliente(@PathVariable Long idUsuario,  UserUpdateDto userUpdateDto){
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("No se ha encontrado el usuario"));
 
         usuarioMapper.updateEntityFromDto(userUpdateDto, usuario);
-
         Usuario actualizado = usuarioRepository.save(usuario);
 
         return usuarioMapper.toResponseDto(actualizado);
     }
-
 
     public void eliminarUsuario(@PathVariable Long idUsuario){
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("No se ha encontrado el usuario"));
 
         usuario.setEstado(false);
-
         usuarioRepository.save(usuario);
     }
 
-   public UserAuthResponde endPoint (String correo){
-       Credenciales credenciales = credencialesRepository.findByUsuario_Correo(correo)
-               .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
+    public UserAuthResponde endPoint (String correo){
+        Credenciales credenciales = credencialesRepository.findByUsuario_Correo(correo)
+                .orElseThrow(() -> new RuntimeException("No se ha encontrado el correo"));
         return usuarioMapper.toAuthResponseDto(credenciales);
-   }
+    }
 
-
-   public  void asignarHorario(Long idUsuario, AsignacionHorario dto){
-
+    public void asignarHorario(Long idUsuario, AsignacionHorario dto){
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("No se ha encontrado el id del usuario"));
 
-       Horario horario = horarioRepository.findById(dto.idHorario())
-               .orElseThrow(() -> new RuntimeException("No se encontro el id del Horario"));
+        Horario horario = horarioRepository.findById(dto.idHorario())
+                .orElseThrow(() -> new RuntimeException("No se encontro el id del Horario"));
 
+        UserHorario usuarioHorario = usuarioHorarioMapper.toEntity(dto);
+        usuarioHorario.setUsuario(usuario);
+        usuarioHorario.setHorario(horario);
 
-       UserHorario usuarioHorario = usuarioHorarioMapper.toEntity(dto);
-       usuarioHorario.setUsuario(usuario);
-       usuarioHorario.setHorario(horario);
-
-       userHorarioRepository.save(usuarioHorario);
-
-
-
-   }
-
+        userHorarioRepository.save(usuarioHorario);
+    }
 
     public List<AsignacionHorarioResponseDto> listarHorariosPorUsuario(Long idUsuario){
-
         List<UserHorario> usuarioHorarios = userHorarioRepository.findByUsuario_IdUsuario(idUsuario);
 
         return usuarioHorarios.stream()
@@ -160,27 +135,20 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-
     public HorarioAsignadoDto obtenerHorarioActualPorHorario(Long idUsuario){
         LocalDate hoy = LocalDate.now();
 
         logger.info("==> Buscando horario para usuario ID: {} en la fecha: {}", idUsuario, hoy);
 
-
         UserHorario userHorario = userHorarioRepository.findHorarioAsignadoPorFecha(idUsuario,hoy)
                 .orElseThrow(() -> new RuntimeException("No se ha asignado un horario para el usuario"));
         logger.error("==> ¡No se encontró horario para el usuario ID: {}!", idUsuario);
 
-
         Horario horario = userHorario.getHorario();
         logger.info("==> ¡Horario encontrado! Devolviendo DTO para el horario: {}", horario.getNombreHorario());
 
-
         return new HorarioAsignadoDto(horario.getHoraEntrada(), horario.getToleranciaMin());
-
-
     }
-
 
     @Transactional
     public UserResponseDto subirImagenUsuario(Long idUsuario, MultipartFile imagen) {
@@ -218,14 +186,30 @@ public class UsuarioService {
         }
     }
 
-    // filepath: c:\PROYECTOS\Proyecto SOA\AsistIA---Sistema-de-Asistencia-con-IA\Back\User-Service\src\main\java\com\example\User_Service\service\UsuarioService.java
-// ...existing code...
+    public Usuario buscarUsuarioPorId(Long idUsuario) {
+        return usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
 
-public Usuario buscarUsuarioPorId(Long idUsuario) {
-    return usuarioRepository.findById(idUsuario)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-}
+    // ← MÉTODO AGREGADO: Obtener ID de usuario por DNI (para Asistencia-Service)
+    public Long obtenerIdPorDni(String dni) {
+        logger.info("🔍 Buscando usuario con DNI: {}", dni);
+        
+        Usuario usuario = usuarioRepository.findByDni(dni)
+                .orElseThrow(() -> new RuntimeException("No se encontró usuario con DNI: " + dni));
+        
+        logger.info("✅ Usuario encontrado con ID: {}", usuario.getIdUsuario());
+        return usuario.getIdUsuario();
+    }
 
-// ...existing code...
-
+     public UserResponseDto obtenerUsuarioPorId(Long idUsuario) {
+        logger.info("🔍 Buscando usuario con ID: {}", idUsuario);
+        
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("No se encontró usuario con ID: " + idUsuario));
+        
+        logger.info("✅ Usuario encontrado: {}", usuario.getNombre());
+        
+        return usuarioMapper.toResponseDto(usuario);
+    }
 }

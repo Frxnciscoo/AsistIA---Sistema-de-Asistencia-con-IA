@@ -1,6 +1,7 @@
 package com.example.Asistencia_Service.client;
 
 import com.example.Asistencia_Service.dto.HorarioAsinadoDto;
+import com.example.Asistencia_Service.dto.UserResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,5 +15,8 @@ public interface UserServiceClient {
 
     @GetMapping("/Usuarios/internal/buscar-por-dni/{dni}")
     Long obtenerIdPorDni(@PathVariable("dni") String dni);
+    
+    @GetMapping("/Usuarios/{idUsuario}")
+    UserResponseDto obtenerUsuarioPorId(@PathVariable("idUsuario") Long idUsuario);
 
 }

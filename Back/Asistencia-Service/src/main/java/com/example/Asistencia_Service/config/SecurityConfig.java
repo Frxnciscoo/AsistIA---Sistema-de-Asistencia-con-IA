@@ -1,6 +1,5 @@
 package com.example.Asistencia_Service.config;
 
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +12,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -27,6 +29,20 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    // ← AGREGADO: Bean para CORS global
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     // Este Bean crea el "lector de tarjetas" (JwtDecoder)
     @Bean
@@ -54,16 +70,19 @@ public class SecurityConfig {
         return http
                 // Deshabilitamos CSRF para nuestra API stateless
                 .csrf(AbstractHttpConfigurer::disable)
+                
+                // ← AGREGADO: Habilita CORS
+                .cors(withDefaults())
 
                 // Definimos las reglas de autorización para las rutas
                 .authorizeHttpRequests(auth -> {
-    // La ruta de health check para Consul debe ser pública
-    auth.requestMatchers("/actuator/health").permitAll();
-    // Permitir acceso público al endpoint de reconocimiento facial
-    auth.requestMatchers("/asistencia/reconocimiento-facial").permitAll();
-    // Cualquier otra petición requiere un token válido
-    auth.anyRequest().authenticated();
-})
+                    // La ruta de health check para Consul debe ser pública
+                    auth.requestMatchers("/actuator/health").permitAll();
+                    // Permitir acceso público al endpoint de reconocimiento facial
+                    auth.requestMatchers("/asistencia/reconocimiento-facial").permitAll();
+                    // Cualquier otra petición requiere un token válido
+                    auth.anyRequest().authenticated();
+                })
 
                 // La gestión de sesión debe ser stateless, no guardamos nada en el servidor
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -75,4 +94,3 @@ public class SecurityConfig {
                 .build();
     }
 }
-
